@@ -1,11 +1,22 @@
 #include "list.h"
 
-List* List_create()
+List* List_create(methods* m)
 {
 	List* tmp = (List*)malloc(sizeof(List));
 	tmp->size = 0;
 	tmp->head = NULL;
 	tmp->tail = NULL;
+
+	m->init = List_init;
+	m->delete = List_delete;
+	m->pushFront = List_pushFront;
+	m->popFront = List_popFront;
+	m->pushBack = List_pushBack;
+	m->popBack = List_popBack;
+	m->push = List_push;
+	m->pop = List_pop;
+	m->getNode = List_getNode;
+	m->print = List_print;
 
 	return tmp;
 }
@@ -26,7 +37,7 @@ void List_delete(List* list)
 	list = NULL;
 }
 
-void List_pushFront(List* list, int data)
+void List_pushFront(List* list, void* data)
 {
 	Node* tmp = (Node*)malloc(sizeof(Node));
 	if (tmp == NULL)
@@ -46,9 +57,9 @@ void List_pushFront(List* list, int data)
 	list->size++;
 }
 
-int List_popFront(List* list)
+void* List_popFront(List* list)
 {
-	Node* prev; int tmp;
+	Node* prev; void* tmp;
 	if (list->head == NULL)
 		exit(2);
 
@@ -67,7 +78,7 @@ int List_popFront(List* list)
 	return tmp;
 }
 
-void List_pushBack(List* list, int data)
+void List_pushBack(List* list, void* data)
 {
 	Node* tmp = (Node*)malloc(sizeof(Node));
 	if (tmp == NULL)
@@ -87,9 +98,9 @@ void List_pushBack(List* list, int data)
 	list->size++;
 }
 
-int List_popBack(List* list)
+void* List_popBack(List* list)
 {
-	Node* next; int tmp;
+	Node* next; void* tmp;
 	if (list->tail == NULL)
 		exit(4);
 
@@ -122,7 +133,7 @@ Node* List_getNode(List* list, size_t index)
 	return tmp;
 }
 
-void List_push(List* list, size_t index, int data)
+void List_push(List* list, size_t index, void* data)
 {
 	Node* elem; Node* tmp;
 	elem = List_getNode(list, index);
@@ -146,9 +157,9 @@ void List_push(List* list, size_t index, int data)
 	list->size++;
 }
 
-int List_pop(List* list, size_t index)
+void* List_pop(List* list, size_t index)
 {
-	Node* elem; int tmp;
+	Node* elem; void* tmp;
 	elem = List_getNode(list, index);
 	if (elem == NULL)
 		exit(5);
@@ -171,28 +182,31 @@ int List_pop(List* list, size_t index)
 	return tmp;
 }
 
-void List_print(List* list)
+void List_print(List* list, void (*printElem)(void*))
 {
 	Node* tmp = list->head;
 
 	while (tmp)
 	{
-		printf("%d ", tmp->data);
+		printElem(tmp->data);
 		tmp = tmp->next;
 	}
 
 	printf("\n");
 }
 
-void List_init(List* list, size_t n)
+void List_init(List* list, void* arr, size_t n, size_t size)
 {
-	size_t i = 0; int tmp;
+	size_t i = 0;
+
+	if (arr == NULL)
+		exit(6);
+	if (list == NULL)
+		exit(7);
 
 	while (i < n)
 	{
-		scanf("%d", &tmp);
-		List_pushBack(list, tmp);
-
+		List_pushBack(list, (char*)arr + i*size);
 		i++;
 	}
 }

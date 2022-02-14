@@ -1,51 +1,64 @@
 #include "list.h"
 
+void printElem(void* x)
+{
+	printf("%d ", *((int*) x));
+}
+
 int main()
 {
-	List* list = List_create();
+	methods* m = (methods*)malloc(sizeof(methods));
+	Container* list = List_create(m);
 	printf("We have created the list and now we want to initialize it.\n");
-	List_init(list, 10);
-	printf("That's it:\n");
-	List_print(list);
 
+	int a[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+	(m->init)(list, a, 10, sizeof(int));
+	printf("That's it:\n");
+	(m->print)(list, printElem);
+
+	int zero = 0;
 	printf("Now we are going to add element 0 to the front\n");
-	List_pushFront(list, 0);
+	(m->pushFront)(list, &zero);
 	printf("That's it:\n");
-	List_print(list);
-	int front = List_popFront(list);
-	printf("%d was removed from the front.\n", front);
-	printf("That's it:\n");
-	List_print(list);
+	(m->print)(list, printElem);
 
-	printf("Now we are going to add element 11 to the back\n");
-	List_pushBack(list, 11);
+	int* front = (m->popFront)(list);
+	printf("%d was removed from the front.\n", *front);
 	printf("That's it:\n");
-	List_print(list);
-	int back = List_popBack(list);
-	printf("%d was removed from the back.\n", back);
+	(m->print)(list, printElem);
+
+	int ten = 10;
+	printf("Now we are going to add element 10 to the back\n");
+	(m->pushBack)(list, &ten);
 	printf("That's it:\n");
-	List_print(list);
+	(m->print)(list, printElem);
+
+	int* back = (m->popBack)(list);
+	printf("%d was removed from the back.\n", *back);
+	printf("That's it:\n");
+	(m->print)(list, printElem);
 
 	printf("Which node do you want to find?\n");
 	int index;
 	scanf("%d", &index);
-	Node* node = List_getNode(list, index);
-	printf("That's it: %d\n", node->data);
+	Node* node = (m->getNode)(list, index);
+	printf("That's it: %d\n", *((int*)(node->data)));
 
 	printf("Where an what do you want to push?\n");
 	int where; int what;
 	scanf("%d %d", &where, &what);
-	List_push(list, where, what);
+	(m->push)(list, where, &what);
 	printf("That's it:\n");
-	List_print(list);
+	(m->print)(list, printElem);
 
 	printf("What do you want to pop?\n");
-	scanf("%d", &what);
-	int answer = List_pop(list, what);
-	printf("That's it: %d\n", answer);
-	List_print(list);
+	int pop_what;
+	scanf("%d", &pop_what);
+	int* answer = (m->pop)(list, pop_what);
+	printf("That's it: %d\n", *answer);
+	(m->print)(list, printElem);
 
-	List_delete(list);
+	(m->delete)(list);
 
 	printf("We have deleted the list.\n");
 
