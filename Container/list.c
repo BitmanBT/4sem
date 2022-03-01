@@ -1,28 +1,62 @@
-#include "list.h"
+#include "Container.h"
 
-List* List_create(methods* m)
+#include <assert.h>
+
+typedef struct Node
 {
-	List* tmp = (List*)malloc(sizeof(List));
-	tmp->size = 0;
-	tmp->head = NULL;
-	tmp->tail = NULL;
+	struct Node* prev;
+	void* data;
+	struct Node* next;
+} Node;
 
-	m->init = List_init;
-	m->delete = List_delete;
-	m->pushFront = List_pushFront;
-	m->popFront = List_popFront;
-	m->pushBack = List_pushBack;
-	m->popBack = List_popBack;
-	m->push = List_push;
-	m->pop = List_pop;
-	m->getNode = List_getNode;
-	m->print = List_print;
+typedef struct List
+{
+	size_t size;
+	Node* head;
+	Node* tail;
+} List;
+
+void List_init(Container* list, void* arr, size_t n, size_t size);
+void List_delete(Container* list);
+void List_pushBack(Container* list, void* data);
+void* List_popBack(Container* list);
+void* List_getValue(Container* cont, size_t index);
+void List_setValue(Container* cont, size_t index, void* data);
+void List_print(Container* list, void (*printElem)(void*));
+void List_bubbleSort(Container* cont, bool (*compType)(void*, void*));
+
+Container* List_create()
+{
+	Container* tmp = (Container*)malloc(sizeof(Container) + sizeof(List));
+	if (tmp == NULL)
+		exit(1);
+	tmp->m = malloc(sizeof(methods));
+	if (tmp->m == NULL)
+	{
+		free(tmp);
+		exit(2);
+	}
+	List* list = (List*)(tmp + 1);
+	list->size = 0;
+	list->head = NULL;
+	list->tail = NULL;
+
+	tmp->m->init = List_init;
+	tmp->m->delete = List_delete;
+	tmp->m->pushBack = List_pushBack;
+	tmp->m->popBack = List_popBack;
+	tmp->m->getValue = List_getValue;
+	tmp->m->setValue = List_setValue;
+	tmp->m->print = List_print;
+	tmp->m->bubbleSort = List_bubbleSort;
 
 	return tmp;
 }
 
-void List_delete(List* list)
+void List_delete(Container* cont)
 {
+	List* list = (List*)(cont + 1);
+	
 	Node* tmp = list->head;
 	Node* next = NULL;
 
@@ -33,56 +67,16 @@ void List_delete(List* list)
 		tmp = next;
 	}
 
-	free(list);
-	list = NULL;
+	free(cont);
 }
 
-void List_pushFront(List* list, void* data)
+void List_pushBack(Container* cont, void* data)
 {
+	List* list = (List*)(cont + 1);
+	
 	Node* tmp = (Node*)malloc(sizeof(Node));
 	if (tmp == NULL)
-		exit(1);
-
-	tmp->data = data;
-	tmp->prev = NULL;
-	tmp->next = list->head;
-
-	if (list->head)
-		list->head->prev = tmp;
-	list->head = tmp;
-
-	if (list->tail == NULL)
-		list->tail = tmp;
-
-	list->size++;
-}
-
-void* List_popFront(List* list)
-{
-	Node* prev; void* tmp;
-	if (list->head == NULL)
-		exit(2);
-
-	prev = list->head;
-	list->head = list->head->next;
-	if (list->head)
-		list->head->prev = NULL;
-
-	if (prev == list->tail)
-		list->tail = NULL;
-
-	tmp = prev->data;
-	free(prev);
-
-	list->size--;
-	return tmp;
-}
-
-void List_pushBack(List* list, void* data)
-{
-	Node* tmp = (Node*)malloc(sizeof(Node));
-	if (tmp == NULL)
-		exit(3);
+		exit(5);
 
 	tmp->data = data;
 	tmp->prev = list->tail;
@@ -98,11 +92,13 @@ void List_pushBack(List* list, void* data)
 	list->size++;
 }
 
-void* List_popBack(List* list)
+void* List_popBack(Container* cont)
 {
+	List* list = (List*)(cont + 1);
+	
 	Node* next; void* tmp;
 	if (list->tail == NULL)
-		exit(4);
+		exit(6);
 
 	next = list->tail;
 	list->tail = list->tail->prev;
@@ -119,8 +115,10 @@ void* List_popBack(List* list)
 	return tmp;
 }
 
-Node* List_getNode(List* list, size_t index)
+void* List_getNode(Container* cont, size_t index)
 {
+	List* list = (List*)(cont + 1);
+	
 	Node* tmp = list->head;
 	size_t i = 0;
 
@@ -133,57 +131,42 @@ Node* List_getNode(List* list, size_t index)
 	return tmp;
 }
 
-void List_push(List* list, size_t index, void* data)
+void* List_getValue(Container* cont, size_t index)
 {
-	Node* elem; Node* tmp;
-	elem = List_getNode(list, index);
-	if (elem == NULL)
-		exit(5);
+	List* list = (List*)(cont + 1);
 
-	tmp = (Node*)malloc(sizeof(Node));
-	tmp->data = data;
-	tmp->prev = elem;
-	tmp->next = elem->next;
+	Node* elem = list->head;
+	int i = 0;
 
-	if (elem->next)
-		elem->next->prev = tmp;
-	elem->next = tmp;
+	while ((elem) && (i < index))
+	{
+		elem = elem->next;
+		i++;
+	}
 
-	if (!elem->prev)
-		list->head = elem;
-	if (!elem->next)
-		list->tail = elem;
-
-	list->size++;
+	return elem->data;
 }
 
-void* List_pop(List* list, size_t index)
+void List_setValue(Container* cont, size_t index, void* data)
 {
-	Node* elem; void* tmp;
-	elem = List_getNode(list, index);
-	if (elem == NULL)
-		exit(5);
+	List* list = (List*)(cont + 1);
 
-	if (elem->prev)
-		elem->prev->next = elem->next;
-	if (elem->next)
-		elem->next->prev = elem->prev;
-	tmp = elem->data;
+	Node* elem = list->head;
+	int i = 0;
 
-	if (!elem->prev)
-		list->head = elem->next;
-	if (!elem->next)
-		list->tail = elem->prev;
+	while ((elem) && (i < index))
+	{
+		elem = elem->next;
+		i++;
+	}
 
-	free(elem);
-
-	list->size--;
-
-	return tmp;
+	elem->data = data;
 }
 
-void List_print(List* list, void (*printElem)(void*))
+void List_print(Container* cont, void (*printElem)(void*))
 {
+	List* list = (List*)(cont + 1);
+	
 	Node* tmp = list->head;
 
 	while (tmp)
@@ -195,8 +178,10 @@ void List_print(List* list, void (*printElem)(void*))
 	printf("\n");
 }
 
-void List_init(List* list, void* arr, size_t n, size_t size)
+void List_init(Container* cont, void* arr, size_t n, size_t size)
 {
+	List* list = (List*)(cont + 1);
+	
 	size_t i = 0;
 
 	if (arr == NULL)
@@ -206,7 +191,30 @@ void List_init(List* list, void* arr, size_t n, size_t size)
 
 	while (i < n)
 	{
-		List_pushBack(list, (char*)arr + i*size);
+		List_pushBack(cont, (char*)arr + i*size);
 		i++;
+	}
+}
+
+void List_bubbleSort(Container* cont, bool (*compType)(void*, void*))
+{
+	List* list = (List*)(cont + 1);
+
+	int i = 0, j = 0;
+	Node* this; Node* another;
+
+	for (i = 0; i < list->size - 1; i++)
+	{
+		for (j = 0; j < list->size - i - 1; j++)
+		{
+			this = List_getNode(cont, j);
+			another = List_getNode(cont, j + 1);
+			if (compType(this->data, another->data))
+			{
+				void* tmp = this->data;
+				this->data = another->data;
+				another->data = tmp;
+			}
+		}
 	}
 }
