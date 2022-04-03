@@ -2,9 +2,15 @@
 #include <unistd.h>
 #include <cstring>
 #include <sys/ioctl.h>
+#include <termios.h>
+#include <unistd.h>
+#include <csignal>
+
 #include "tview.h"
 
-bool QUIT = 0;
+struct termios old_term;
+
+bool QUIT = false;
 
 struct size
 {
@@ -12,27 +18,54 @@ struct size
     size_t lines;
 };
 
+void SignHandler(int n)
+{
+    QUIT = true;
+}
+
+TView::TView()
+{
+    struct termios term;
+    tcgetattr(0, &term);
+    
+    old_term = term;
+
+    cfmakeraw(&term);
+    term.c_lflag |= ISIG;
+    tcsetattr(0, TCSANOW, &term);
+    signal(SIGINT, SignHandler);
+}
+
+TView::~TView() 
+{
+    tcsetattr(0, TCSANOW, &old_term);
+}
+
+void TView::run()
+{
+    while (!QUIT)
+    {
+        draw();
+
+        usleep(500000);
+    }
+}
+
 void TView::draw()
 {
     clrscr();
-
+    
     struct winsize w;
     ioctl(0, TIOCGWINSZ, &w);
     struct size cur_size;
     cur_size.cols = w.ws_col - 1;
     cur_size.lines = w.ws_row - 1;
     
-    box(&cur_size);
-}
+    clrscr();
 
-void TView::run()
-{
-    //setvbuf(stdout, NULL, _IONBF, sizeof(char));
-    while (!QUIT)
-    {
-        draw();
-        usleep(1000);
-    }
+    setcolor(32, 43);
+
+    box(&cur_size);
 }
 
 void TView::gotoxy(int x, int y)
@@ -45,13 +78,13 @@ void TView::clrscr()
     printf("\e[H\e[J");
 }
 
-void TView::put(char c)
+void TView::putc(char c)
 {
     printf("%c", c);
     fflush(stdout);
 }
 
-void TView::putstr(char* s)
+void TView::puts(char* s)
 {
     printf("%s\n", s);
     fflush(stdout);
@@ -62,13 +95,18 @@ void TView::setcolor(int color)
     printf("\e[%dm", color);
 }
 
+void TView::setcolor(int f_color, int b_color) 
+{
+    printf("\e[%d;%dm", f_color, b_color);
+}
+
 void TView::hline(size_t cols, size_t cur_line)
 {
     gotoxy(1, cur_line);
     char* s = new char[cols];
     for (size_t i = 0; i < cols; i++)
-        s[i] = '-';
-    putstr(s);
+        s[i] = '*';
+    puts(s);
 }
 
 void TView::vline(size_t lines, size_t cur_col)
@@ -76,7 +114,7 @@ void TView::vline(size_t lines, size_t cur_col)
     for (size_t i = 2; i <= lines - 1; i++)
     {
         gotoxy(cur_col, i);
-        put('|');
+        putc('*');
     }
 }
 

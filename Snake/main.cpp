@@ -5,18 +5,20 @@
 
 int main(int argc, char* argv[])
 {
-    View* v;
+    View* view;
 
     if ((argv[1] == NULL) || (std::string(argv[1]) == "text"))
     {
-        v = View::getView("text");
+        view = View::getView("text");
     }
     else
     {
-        v = View::getView(argv[1]);
+        view = View::getView(argv[1]);
     }
 
-    v->run();
+    view->run();
+
+    delete view;
 
     return 0;
 }
