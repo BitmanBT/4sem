@@ -1,24 +1,28 @@
 CXX = g++
-CXXFLAGS = -Wall -g
+CXXFLAGS = -Wall -Wextra -I./$(INCLDIR)
 
-SOURCES = main.cpp human.cpp model.cpp tview.cpp gview.cpp view.cpp
-OBJECTS = $(SOURCES:.cpp=.o)
-EXEC = snake
+SRCDIR = src
+INCLDIR = include
+BUILDDIR = build
+
+PROG = $(BUILDDIR)/snake
+SRC = main.cpp human.cpp model.cpp tview.cpp gview.cpp view.cpp
+OBJ = $(SRC:.cpp=.o)
 
 .PHONY: all clean depend
 
-all: $(EXEC)
+all: $(PROG)
 
-$(EXEC): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(EXEC) 
+$(PROG): $(addprefix $(BUILDDIR)/, $(OBJ))
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
-.cpp.o:
+$(addprefix $(BUILDDIR)/, $(OBJ)) : $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLDIR)/%.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	$(RM) $(OBJECTS) $(EXEC)
+	$(RM) $(BUILDDIR)/*.o
 
 depend: 
-	$(CXX) $(CXXFLAGS) $(OBJECTS:.o=.cpp) -MM > .depend
+	$(CXX) $(CXXFLAGS) $(addprefix $(SRCDIR)/, $(SRC)) -MM > $(BUILDDIR)/.depend
 
--include .depend
+-include $(BUILDDIR)/.depend
