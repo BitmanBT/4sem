@@ -13,6 +13,7 @@ const int numRabbits = 3;
 class Game
 {
 	std::list<coord> rabbits;
+	std::list<Snake> snakes;
 
 	const coord randomCoord();
 	const coord checkIfSnake(coord& random);
@@ -21,13 +22,19 @@ class Game
 	std::random_device gen_;
 	int TimeBetweenRabbits = 10;
 
+	void snakeChanges(Snake& snake);
+	void ifSomebodyDead();
+
 public:
 	Game();
 	~Game();
 
 	bool drawAll();
 
+	Snake& getSnake();
+
 	std::list<coord>& getRabbits() { return rabbits; }
+	std::list<Snake>& getSnakes() { return snakes; }
 };
 
 #endif // GAME_H

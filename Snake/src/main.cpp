@@ -13,6 +13,9 @@ int main(int argc, char* argv[])
         view = View::getView(argv[1]);
     }
 
+    Game game;
+    Human human(game.getSnake());
+
     view->run();
 
     delete view;

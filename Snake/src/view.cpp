@@ -19,7 +19,7 @@ View* View::getView(const char* value)
     {
         //obj = new GView();
     }
-    else 
+    else
     {
         perror("INVALID ARG");
         return NULL;

@@ -1,4 +1,11 @@
-#include "../include/tview.h"
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <signal.h>
+#include <functional>
+#include <poll.h>
+
+#include "tview.h"
+#include "game.h"
 
 #define FG_BLACK 30
 #define FG_RED 31
@@ -24,14 +31,6 @@ struct termios old_term;
 
 bool QUIT = false;
 
-const size_t num_rabbits = 10;
-
-struct size
-{
-    size_t cols;
-    size_t lines;
-};
-
 void SignHandler(int n)
 {
     QUIT = true;
@@ -41,68 +40,143 @@ TView::TView()
 {
     struct termios term;
     tcgetattr(0, &term);
-    
+
     old_term = term;
 
     cfmakeraw(&term);
     term.c_lflag |= ISIG;
     tcsetattr(0, TCSANOW, &term);
     signal(SIGINT, SignHandler);
+
+    clrscr();
+
+    struct winsize w;
+    ioctl(1, TIOCGWINSZ, &w);
+    cur_size.first = w.ws_col;
+    cur_size.second = w.ws_row;
 }
 
-TView::~TView() 
+TView::~TView()
 {
+    clrscr();
     tcsetattr(0, TCSANOW, &old_term);
 }
 
+void TView::setDrawer(drawer drawFunc) { drawAll = drawFunc; }
+void TView::setKeyHandler(keyHandler keyHandler) { keyHandlerFunc = keyHandler; }
+
+const coord TView::getCurSize() { return cur_size; };
+
+void TView::draw() {}
+
 void TView::run()
 {
+    struct pollfd arr;
+    arr.fd = 0;
+    arr.events = POLLIN;
+
+    clrscr();
+    drawBox();
+    bool Looser = false;
+
+    drawAll();
+
     while (!QUIT)
     {
-        draw();
-
-        struct pollfd arr;
-        arr.fd = 0;
-        arr.events = POLLIN;
-
-        int n = poll(&arr, 1, 500);
+        int n = poll(&arr, 1, 100);
         if (n == 1)
         {
-            char c;
-            scanf("%c", &c);
+            char keybuf[BUFSIZ];
+            int size = read(0, keybuf, BUFSIZ);
 
-            if (c == 'q') break;
+            for (int i = 0; i < size; i++)
+            {
+                if (keybuf[i] == 'q')
+                {
+                    QUIT = true;
+                    break;
+                }
+                else
+                {
+                    keyHandlerFunc(keybuf[i]);
+                    Looser = drawAll();
+                    if (Looser)
+                    {
+                        //write something
+                        QUIT = true;
+                        usleep(FPS);
+                        return;
+                    }
+                }
+            }
         }
-
-        usleep(FPS);
     }
+
+    return;
 }
 
-void TView::draw()
+void TView::draw(coord& rabbit)
 {
-    clrscr();
-    
-    struct winsize w;
-    ioctl(0, TIOCGWINSZ, &w);
-    struct size cur_size;
-    cur_size.cols = w.ws_col - 1;
-    cur_size.lines = w.ws_row - 1;
+    setcolor(FG_MAGENTA, BG_BLACK);
 
-    UserInformation();
+    gotoxy(rabbit.first, rabbit.second);
+    putc('@');
 
-    box(&cur_size);
+    setcolor(FG_BLACK, BG_BLACK);
+}
 
-    std::list<rabbit> rabbits;
+void TView::draw(Snake& snake)
+{
+    setcolor(snake.snake_color);
 
-    for (int i = 0; i < num_rabbits; i++)
+    auto head = snake.body.begin();
+    gotoxy(*head);
+
+    switch (snake.snake_direction)
     {
-        std::pair<int, int> tmp = RandCoord(cur_size.cols, cur_size.lines);
-        rabbits.push_back(tmp);
+        case DIRECTION::UPWARD:
+            putc('^');
+            break;
+        case DIRECTION::LEFT:
+            putc('<');
+            break;
+        case DIRECTION::RIGHT:
+            putc('>');
+            break;
+        case DIRECTION::DOWNWARD:
+            putc('v');
+            break;
+        default:
+            break;
     }
 
-    DrawRabbits(rabbits);
+    if (snake.body.begin() != snake.body.end())
+        head++;
+    else
+    {
+        setcolor(FG_BLACK, BG_BLACK);
+        return;
+    }
 
-    gotoxy(w.ws_col, w.ws_row);
+    for (auto point = head; point != snake.body.end(); point++)
+    {
+        gotoxy(*point);
+        putc('0');
+    }
+
+    setcolor(FG_BLACK, BG_BLACK);
+}
+
+void TView::drawBox()
+{
+    setcolor(FG_GREEN, BG_BLUE);
+
+    hline(cur_size.first, 1);
+    hline(cur_size.first, cur_size.second);
+    vline(cur_size.second, 1);
+    vline(cur_size.second, cur_size.first);
+
+    setcolor(FG_BLACK, BG_BLACK);
 }
 
 void TView::gotoxy(int x, int y)
@@ -110,21 +184,24 @@ void TView::gotoxy(int x, int y)
     printf("\e[%d;%dH", y, x);
 }
 
+void TView::gotoxy(const coord& point)
+{
+    printf("\e[%d;%dH", point.second, point.first);
+}
+
 void TView::clrscr()
 {
-    printf("\e[H\e[J");
+    std::cout << "\e[H\e[J" << std::flush;
 }
 
 void TView::putc(char c)
 {
-    printf("%c", c);
-    fflush(stdout);
+    std::cout << c << std::flush;
 }
 
-void TView::puts(char* s)
+void TView::puts(const char* s)
 {
-    printf("%s\n", s);
-    fflush(stdout);
+    std::cout << s << std::flush;
 }
 
 void TView::setcolor(int color)
@@ -132,9 +209,14 @@ void TView::setcolor(int color)
     printf("\e[%dm", color);
 }
 
-void TView::setcolor(int f_color, int b_color) 
+void TView::setcolor(int f_color, int b_color)
 {
     printf("\e[%d;%dm", f_color, b_color);
+}
+
+void TView::setcolor(COLOR color)
+{
+    printf("\e[%dm", (int) color);
 }
 
 void TView::hline(size_t cols, size_t cur_line)
@@ -155,50 +237,22 @@ void TView::vline(size_t lines, size_t cur_col)
     }
 }
 
-void TView::box(struct size* cur_size)
+/*void TView::check_size()
 {
-    setcolor(FG_GREEN, BG_BLUE);
-    
-    hline(cur_size->cols, 1);
-    hline(cur_size->cols, cur_size->lines);
-    vline(cur_size->lines, 1);
-    vline(cur_size->lines, cur_size->cols);
-}
+    struct winsize w;
+    ioctl(1, TIOCGWINSZ, &w);
 
-void TView::UserInformation()
+    if ((cur_size.cols != w.ws_col - 1) || (cur_size.lines != w.ws_row - 1))
+        clrscr();
+
+    cur_size.cols = w.ws_col - 1;
+    cur_size.lines = w.ws_row - 1;
+}*/
+
+/*void TView::UserInformation()
 {
     setcolor(FG_GREEN, BG_BLACK);
-    
+
     gotoxy(2, 2);
     puts("Score: 0");
-}
-
-std::pair<int, int> TView::RandCoord(const size_t cols, const size_t lines)
-{
-    std::pair<int, int> rand_coord;
-
-    std::random_device random_device;
-    std::mt19937 generator(random_device());
-
-    std::uniform_int_distribution<> distribution_x(2, cols - 1);
-    std::uniform_int_distribution<> distribution_y(2, lines - 1);
-
-    int x = distribution_x(generator);
-    int y = distribution_y(generator);
-
-    rand_coord.first = x;
-    rand_coord.second = y;
-
-    return rand_coord;
-}
-
-void TView::DrawRabbits(const std::list<rabbit>& rabbits)
-{
-    setcolor(FG_MAGENTA, BG_BLACK);
-
-    for (const auto [x, y] : rabbits)
-    {
-        gotoxy(x, y);
-        putc('@');
-    }
-}
+}*/

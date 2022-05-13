@@ -4,6 +4,7 @@
 #include <cstdio>
 
 #include "view.h"
-#include "model.h"
+#include "game.h"
+#include "human.h"
 
 #endif // MAIN_H
