@@ -102,13 +102,26 @@ void TView::run()
                     Looser = drawAll();
                     if (Looser)
                     {
-                        //write something
+                        youLost();
                         QUIT = true;
                         usleep(FPS);
                         return;
                     }
                 }
             }
+        }
+        else
+        {
+            //#if 1
+            Looser = drawAll();
+            if (Looser)
+            {
+                youLost();
+                QUIT = true;
+                usleep(FPS);
+                return;
+            }
+            //#endif
         }
     }
 
@@ -164,6 +177,23 @@ void TView::draw(Snake& snake)
         putc('0');
     }
 
+    setcolor(FG_BLACK, BG_BLACK);
+}
+
+void TView::clrPoint(coord& point)
+{
+    gotoxy(point);
+    putc(' ');
+}
+
+void TView::youLost()
+{
+    clrscr();
+    drawBox();
+    gotoxy(cur_size.first/2 - 9, cur_size.second/2);
+    setcolor(FG_MAGENTA, BG_WHITE);
+    puts("YOU LOST! GOOD TRY!");
+    usleep(100 * FPS);
     setcolor(FG_BLACK, BG_BLACK);
 }
 

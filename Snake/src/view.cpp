@@ -17,7 +17,7 @@ View* View::getView(const char* value)
     }
     else if (std::string(value) == "gui")
     {
-        //obj = new GView();
+        obj = new GView();
     }
     else
     {

@@ -29,25 +29,41 @@ Snake& Game::getSnake()
 
     snakes.push_back(snake);
 
-    return snake;
+    return snakes.back();
 }
 
 bool Game::drawAll()
 {
-    int iter = 1;
+    //int iter = 1;
     
     for (auto rabbit : rabbits)
     {
         view->draw(rabbit);
     }
 
-    for (auto snake : snakes)
+    for (auto& snake : snakes)
     {
         view->draw(snake);
+        snakeMoves(snake);
     }
 
-    iter = (iter++) % TimeBetweenRabbits;
-    if (!iter && (rabbits.size() < numRabbits))
+    for (auto snake = snakes.begin(); snake != snakes.end(); snake++)
+    {
+        if (snake->snake_status == STATUS::DEAD)
+            return true;
+
+        if (snake->snake_status != STATUS::FED)
+        {
+            auto point = snake->body.back();
+            view->clrPoint(point);
+            snake->body.pop_back();
+        }
+        else
+            snake->snake_status = STATUS::ALIVE;
+    }
+
+    //iter = (iter + 1) % TimeBetweenRabbits;
+    if (/*!iter &&*/ (rabbits.size() < numRabbits))
         rabbits.push_back(randomCoord());
 
     return false;
@@ -111,3 +127,93 @@ const coord Game::checkIfSnake(coord& random)
 
     return random;
 }
+
+void Game::snakeMoves(Snake& snake)
+{
+    auto head = snake.body.front();
+
+    switch (snake.snake_direction)
+    {
+        case DIRECTION::UPWARD:
+        {
+            head.second--;
+            if (head.second == 1)
+                snake.snake_status = STATUS::DEAD;
+            break;
+        }
+        case DIRECTION::LEFT:
+        {
+            head.first--;
+            if (head.first == 1)
+                snake.snake_status = STATUS::DEAD;
+            break;
+        }
+        case DIRECTION::RIGHT:
+        {
+            head.first++;
+            auto v = View::getView(NULL);
+            if (head.first == (v->getCurSize()).first)
+                snake.snake_status = STATUS::DEAD;
+            break;
+        }
+        case DIRECTION::DOWNWARD:
+        {
+            head.second++;
+            auto v = View::getView(NULL);
+            if (head.second == (v->getCurSize()).second)
+                snake.snake_status = STATUS::DEAD;
+            break;
+        }
+    }
+
+    for (auto point : snake.body)
+    {
+        if ((point.first == head.first) && (point.second == head.second))
+            snake.snake_status = STATUS::DEAD;
+    }
+
+    for (auto point = rabbits.begin(); point != rabbits.end(); point++)
+    {
+        if (*point == head)
+        {
+            snake.snake_status = STATUS::FED;
+            auto eaten = point;
+            point--;
+            rabbits.erase(eaten);
+        }
+    }
+
+    snake.body.push_front(head);
+
+    /*switch (snake.snake_direction)
+    {
+        case DIRECTION::UPWARD:
+        {
+            for (auto point : snake.body)
+                point.second--;
+            break;
+        }
+        case DIRECTION::LEFT:
+        {
+            for (auto point : snake.body)
+                point.first--;
+            break;
+        }
+        case DIRECTION::RIGHT:
+        {
+            for (auto point : snake.body)
+                point.first++;
+            break;
+        }
+        case DIRECTION::DOWNWARD:
+        {
+            for (auto point : snake.body)
+                point.second++;
+            break;
+        }
+    }*/
+}
+
+/*void Game::checkSnakeStatus(Snake& snake)
+{
+}*/

@@ -37,6 +37,8 @@ public:
     virtual void draw() = 0;
     virtual void draw(coord& rabbit) = 0;
     virtual void draw(Snake& snake) = 0;
+    virtual void clrPoint(coord& point) = 0;
+    virtual void youLost() = 0;
 
     virtual void setDrawer(drawer) = 0;
     virtual void setKeyHandler(keyHandler) = 0;

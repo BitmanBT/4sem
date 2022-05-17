@@ -20,10 +20,10 @@ class Game
 
 	View* view = View::getView(NULL);
 	std::random_device gen_;
-	int TimeBetweenRabbits = 10;
+	//int TimeBetweenRabbits = 5;
 
-	void snakeChanges(Snake& snake);
-	void ifSomebodyDead();
+	void snakeMoves(Snake& snake);
+	//void checkSnakeStatus(Snake& snake);
 
 public:
 	Game();

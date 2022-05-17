@@ -1,5 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -Wextra -I./$(INCLDIR)
+LDFLAGS = 
+LIBFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
 
 SRCDIR = src
 INCLDIR = include
@@ -14,7 +16,7 @@ OBJ = $(SRC:.cpp=.o)
 all: $(PROG)
 
 $(PROG): $(addprefix $(BUILDDIR)/, $(OBJ))
-	$(CXX) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(LDFLAGS) $^ -o $@ $(LIBFLAGS)
 
 $(addprefix $(BUILDDIR)/, $(OBJ)) : $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp $(INCLDIR)/%.h
 	$(CXX) $(CXXFLAGS) -c $< -o $@
