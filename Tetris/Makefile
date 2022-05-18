@@ -8,7 +8,7 @@ INCLDIR = include
 BUILDDIR = build
 
 PROG = $(BUILDDIR)/tetris
-SRC = main.cpp Game.cpp View.cpp Human.cpp
+SRC = main.cpp
 OBJ = $(SRC:.cpp=.o)
 
 .PHONY: all clean depend
