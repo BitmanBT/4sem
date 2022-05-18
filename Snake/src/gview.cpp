@@ -82,7 +82,7 @@ void GView::draw(Snake& snake)
 		CircleShape circle;
 
 		circle.setRadius(div_size);
-		circle.setFillColor(Color::RED);
+		circle.setFillColor(Color::Red);
 		circle.setPosition(Vector2f(point->first * div_size, point->second * div_size));
 
 		window.draw(circle);
@@ -91,13 +91,13 @@ void GView::draw(Snake& snake)
 
 void GView::clrPoint(coord& point)
 {
-	RectangularShape point;
+	RectangleShape toClear;
 
-	point.setSize(Vector2f(div_size, div_size));
-	point.setFillColor(Color::Black);
-	point.setPosition(Vector2f(point.first * div_size, point.second * div_size));
+	toClear.setSize(Vector2f(div_size, div_size));
+	toClear.setFillColor(Color::Yellow);
+	toClear.setPosition(Vector2f(point.first * div_size, point.second * div_size));
 
-	window.draw(point);
+	window.draw(toClear);
 }
 
 void GView::youLost() {}
