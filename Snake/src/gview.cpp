@@ -64,7 +64,16 @@ void GView::run()
 
 void GView::draw() {}
 
-void GView::draw(coord& rabbit) {}
+void GView::draw(coord& rabbit)
+{
+	CircleShape circle;
+	
+	circle.setRadius(div_size);
+	circle.setFillColor(Color::Blue);
+	circle.setPosition(Vector2f(rabbit.first * div_size, rabbit.second * div_size));
+	
+	window.draw(circle);
+}
 
 void GView::draw(Snake& snake) {}
 

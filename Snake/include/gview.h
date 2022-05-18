@@ -7,10 +7,10 @@
 
 class GView : public View
 {
-	sf::RenderWindow window;
-
     coord cur_size;
     int div_size;
+    
+    sf::RenderWindow window;
 
     drawer drawAll;
     keyHandler keyHandlerFunc;
