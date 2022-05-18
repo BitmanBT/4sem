@@ -2,9 +2,9 @@
 
 using namespace sf;
 
-GView::GView() : cur_size{50, 50}, div_size(25), window(VideoMode(cur_size.first * div_size, cur_size.second * div_size), "Snake")
+GView::GView() : cur_size{60, 60}, div_size(5), window(VideoMode(cur_size.first * div_size, cur_size.second * div_size), "Snake")
 {
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(30);
 }
 
 GView::~GView() {}

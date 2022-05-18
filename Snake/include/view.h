@@ -31,7 +31,7 @@ class View
     static View* obj;
 
 public:
-    static View* getView(const char* value);
+    static View* getView(const char* value = nullptr);
     virtual void drawBox() = 0;
     virtual void run() = 0;
     virtual void draw() = 0;

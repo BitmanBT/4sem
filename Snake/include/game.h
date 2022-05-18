@@ -18,12 +18,10 @@ class Game
 	const coord randomCoord();
 	const coord checkIfSnake(coord& random);
 
-	View* view = View::getView(NULL);
+	View* view = View::getView();
 	std::random_device gen_;
-	//int TimeBetweenRabbits = 5;
 
 	void snakeMoves(Snake& snake);
-	//void checkSnakeStatus(Snake& snake);
 
 public:
 	Game();

@@ -2,7 +2,7 @@
 #include "tview.h"
 #include "gview.h"
 
-View* View::obj = NULL;
+View* View::obj = nullptr;
 
 View* View::getView(const char* value)
 {

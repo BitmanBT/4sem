@@ -33,9 +33,7 @@ Snake& Game::getSnake()
 }
 
 bool Game::drawAll()
-{
-    //int iter = 1;
-    
+{   
     for (auto rabbit : rabbits)
     {
         view->draw(rabbit);
@@ -62,8 +60,7 @@ bool Game::drawAll()
             snake->snake_status = STATUS::ALIVE;
     }
 
-    //iter = (iter + 1) % TimeBetweenRabbits;
-    if (/*!iter &&*/ (rabbits.size() < numRabbits))
+    if (rabbits.size() < numRabbits)
         rabbits.push_back(randomCoord());
 
     return false;
@@ -184,36 +181,4 @@ void Game::snakeMoves(Snake& snake)
     }
 
     snake.body.push_front(head);
-
-    /*switch (snake.snake_direction)
-    {
-        case DIRECTION::UPWARD:
-        {
-            for (auto point : snake.body)
-                point.second--;
-            break;
-        }
-        case DIRECTION::LEFT:
-        {
-            for (auto point : snake.body)
-                point.first--;
-            break;
-        }
-        case DIRECTION::RIGHT:
-        {
-            for (auto point : snake.body)
-                point.first++;
-            break;
-        }
-        case DIRECTION::DOWNWARD:
-        {
-            for (auto point : snake.body)
-                point.second++;
-            break;
-        }
-    }*/
 }
-
-/*void Game::checkSnakeStatus(Snake& snake)
-{
-}*/
