@@ -2,16 +2,7 @@
 
 View* View::obj = NULL;
 
-View::View()
-{
-	srand(time(0););
-	
-	Texture texture;
-	texture.loadFromFile("../sprites/tiles.png");
-
-	Sprite sprite(texture);
-	sprite.setTextureRect(IntRect(0, 0, 18, 18));
-}
+View::View() : window(sf::VideoMode(320, 480), "Tetris") {}
 
 View::~View()
 {
@@ -30,11 +21,19 @@ View* View::getView()
 
 void View::run()
 {
+	srand(time(0));
+
+	sf::Texture texture;
+	texture.loadFromFile("../sprites/tiles.png");
+
+	sf::Sprite sprite(texture);
+	sprite.setTextureRect(IntRect(0, 0, 18, 18));
+	
 	while (window.isOpen())
 	{
-		time = clock.getElapsedTime().asSeconds();
+		Time = clock.getElapsedTime().asSeconds();
 		clock.restart();
-		timer += time;
+		timer += Time;
 		
 		Event event;
 		while (window.pollEvent(event))

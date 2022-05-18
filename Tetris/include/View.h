@@ -12,16 +12,14 @@
 
 #include <SFML/Graphics.hpp>
 
-using namespace sf;
-
 using drawer = std::function<bool()>;
 using keyHandler = std::function<void(int)>;
 
 const int M = 20;
 const int N = 10;
 
-Clock clock;
-float time = 0;
+sf::Clock lock_;
+float Time = 0;
 float timer = 0, delay = 0.3;
 
 int colorNum = 1;
@@ -48,7 +46,7 @@ struct Point
 
 class View
 {
-	RenderWindow window(VideoMode(320, 480), "Tetris");
+	sf::RenderWindow window;
 
 	View* obj;
 

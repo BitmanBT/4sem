@@ -4,7 +4,7 @@ int main()
 {
 	View view;
 	Game game;
-	Human human(&game);
+	Human human(game);
 
 	return 0;
 }

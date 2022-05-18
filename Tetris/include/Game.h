@@ -5,8 +5,6 @@
 
 #include "View.h"
 
-using namespace sf;
-
 class Game
 {
 	View* view = View::getView();
@@ -21,7 +19,7 @@ public:
 	Game();
 	~Game();
 
-	bool drawAll();
+	void drawAll();
 };
 
 #endif // GAME_H

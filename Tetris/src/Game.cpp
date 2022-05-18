@@ -7,7 +7,7 @@ Game::Game()
 
 Game::~Game() {}
 
-bool Game::drawAll()
+void Game::drawAll()
 {
 	int n = rand() % 7;
 	
