@@ -75,9 +75,30 @@ void GView::draw(coord& rabbit)
 	window.draw(circle);
 }
 
-void GView::draw(Snake& snake) {}
+void GView::draw(Snake& snake)
+{
+	for (auto point = snake.body.begin(); point != snake.body.end(); point++)
+	{
+		CircleShape circle;
 
-void GView::clrPoint(coord& point) {}
+		circle.setRadius(div_size);
+		circle.setFillColor(Color::RED);
+		circle.setPosition(Vector2f(point->first * div_size, point->second * div_size));
+
+		window.draw(circle);
+	}
+}
+
+void GView::clrPoint(coord& point)
+{
+	RectangularShape point;
+
+	point.setSize(Vector2f(div_size, div_size));
+	point.setFillColor(Color::Black);
+	point.setPosition(Vector2f(point.first * div_size, point.second * div_size));
+
+	window.draw(point);
+}
 
 void GView::youLost() {}
 
@@ -85,4 +106,4 @@ void GView::setDrawer(drawer drawFunc) { drawAll = drawFunc; }
 
 void GView::setKeyHandler(keyHandler keyHandler) { keyHandlerFunc = keyHandler; }
 
-const coord GView::getCurSize() {}
+const coord GView::getCurSize() { return cur_size; }
